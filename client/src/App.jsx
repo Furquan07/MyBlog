@@ -1,7 +1,23 @@
-import React from 'react'
+import React from 'react';
+import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import Home from './pages/Home';
+import About from './pages/about';
+import Dashboard from './pages/Dashboard';
+import Projects from './pages/Projects';
+import Signin from './pages/Signin';
+import SignUp from './pages/SignUp';
 
 export default function App() {
   return (
-    <div className='text-3xl text-red-400'>App</div>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<Home/>} />
+        <Route path='about' element={<About/>} />
+        <Route path='/dashboard' element={<Dashboard/>} />
+        <Route path='/projects' element={<Projects/>} />
+        <Route path='/sigh-in' element={<Signin/>} />
+        <Route path='/sigh-up' element={<SignUp/>} />
+      </Routes>
+    </BrowserRouter>
   )
 }
