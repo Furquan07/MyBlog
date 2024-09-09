@@ -6,15 +6,18 @@ import jwt from 'jsonwebtoken';
 export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
 
-  if (
-    !username ||
-    !email ||
-    !password ||
-    username === '' ||
-    email === '' ||
-    password === ''
-  ) {
-    next(errorHandler(400, 'All fields are required'));
+  if (!username || !email || !password || username === '' || email === '' || password === '') {
+    return next(errorHandler(400, 'All fields are required'));
+  }
+
+  const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return next(errorHandler(400, 'Password must be at least 8 characters long, contain at least one uppercase letter, one special character, and one number.'));
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return next(errorHandler(400, 'Invalid email format. Email must have @ symbol and .com.'));
   }
 
   const hashedPassword = bcryptjs.hashSync(password, 10);
@@ -27,7 +30,7 @@ export const signup = async (req, res, next) => {
 
   try {
     await newUser.save();
-    res.json('Signup successful');
+    res.json({ success: true, message: 'Signup successful' });
   } catch (error) {
     next(error);
   }
@@ -36,8 +39,14 @@ export const signup = async (req, res, next) => {
 export const signin = async (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password || email === '' || password === '') {
-    next(errorHandler(400, 'All fields are required'));
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!email || !password) {
+    return next(errorHandler(400, 'All fields are required'));
+  }
+
+  if (!emailRegex.test(email)) {
+    return next(errorHandler(400, 'Invalid email format'));
   }
 
   try {
@@ -45,10 +54,12 @@ export const signin = async (req, res, next) => {
     if (!validUser) {
       return next(errorHandler(404, 'User not found'));
     }
+
     const validPassword = bcryptjs.compareSync(password, validUser.password);
     if (!validPassword) {
-      return next(errorHandler(400, 'Invalid password'));
+      return next(errorHandler(400, 'Invalid email or password'));
     }
+
     const token = jwt.sign(
       { id: validUser._id, isAdmin: validUser.isAdmin },
       process.env.JWT_SECRET

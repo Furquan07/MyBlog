@@ -11,10 +11,22 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      validate: {
+        validator: function(v) {
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        },
+        message: props => `${props.value} is not a valid email format.`
+      }
     },
     password: {
       type: String,
       required: true,
+      validate: {
+        validator: function(v) {
+          return /^(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[0-9]).{8,}$/.test(v);
+        },
+        message:'Password must be at least 8 characters long, contain at least one uppercase letter, one special character, and one number.'
+      }
     },
     profilePicture: {
       type: String,
